@@ -82,19 +82,84 @@ if len(trainTarget.shape) > 1:
 else:
     numTarget = 1
 
-numHiddenLayers = [0, 1, 2]
-hiddenLayerSize = [5, 10]
-net1 = nl.net.newff(netMinMax, [5, 5, numTarget])
-errors = {}
+numHiddenLayers = [1, 2]
+hiddenLayerSize = [1]
+activationFunctions = {'log': nl.net.trans.LogSig, 'linear': nl.net.trans.PureLin, 'tan': nl.net.trans.TanSig}
+trainingMethods = {'gradientDescent': nl.net.train.train_gd, 'momentum': nl.net.train.train_gdm,
+                  'adaptiveLearningRate': nl.net.train.train_gda, 'm+a': nl.net.train.train_gdx}
+import inspect as ins
+
+# Extract the default values for all of the parameters used by each sort of training method
+gd = ins.getargspec(nl.net.train.gd.TrainGD.__init__)
+m = ins.getargspec(nl.net.train.gd.TrainGDM.__init__)
+alr = ins.getargspec(nl.net.train.gd.TrainGDA.__init__)
+malr = ins.getargspec(nl.net.train.gd.TrainGDX.__init__)
+
+# TODO: Consider other parameters for training algorithms, though this would require extending original package code
+# Store the parameters for each sort of training method
+# Currently, the set is determined by the default, +/- order of mag., +/- mult. of 2
+trainingMethodParameters = {'gradientDescent': {'lr': [gd.defaults[0],
+                                                                 gd.defaults[0] * 10,
+                                                                 gd.defaults[0] / 10,
+                                                                 gd.defaults[0] * 2,
+                                                                 gd.defaults[0] / 2]},
+                            'momentum': {'lr': [m.defaults[0],
+                                                          m.defaults[0] * 10,
+                                                          m.defaults[0] / 10,
+                                                          m.defaults[0] * 2,
+                                                          m.defaults[0] / 2]},
+                            'adaptiveLearningRate': {'lr': [alr.defaults[0],
+                                                                      alr.defaults[0] * 10,
+                                                                      alr.defaults[0] / 10,
+                                                                      alr.defaults[0] * 2,
+                                                                      alr.defaults[0] / 2]},
+                            'm+a': {'lr': [malr.defaults[0],
+                                                     malr.defaults[0] * 10,
+                                                     malr.defaults[0] / 10,
+                                                     malr.defaults[0] * 2,
+                                                     malr.defaults[0] / 2]}}
+
+trainingErrors = {}
+testErrors = {}
+goalThreshold = .02
 for j in numHiddenLayers:
     for i in hiddenLayerSize:
+        # All topologies with no hidden layer are equivalent, so we only need to consider one csae
         if j == 0 and i == hiddenLayerSize[0] or j > 0:
-            layerNums = [i] * j
+            # the number of nodes in each layer is constant (j) and the number of layers is determined
+            # by i
+            layerNums = [j] * i
+            # there is always an output layer, the number of nodes of which is determined by the number of cols in target
             layerNums.append(numTarget)
-            print layerNums
-            net = nl.net.newff(netMinMax, layerNums)
-            # this returns the entire history of errors vs. epochs
-            error = net.train(trainFeatures, trainTarget, epochs=100, show=10, goal=.02)
-            # however, we are only interested in the final error
-            errors[(i, j)] = error[-1]
-print errors
+            #print "Current Topology:", layerNums
+            for aKey in activationFunctions:
+                activationFunction = [activationFunctions[aKey]]*len(layerNums)
+                 # build net, using the current sort of activation function
+                net = nl.net.newff(netMinMax, layerNums, transf=activationFunction)
+                for tKey in trainingMethods:
+                    net.trainf = trainingMethods[tKey]
+                    curParamValues = trainingMethodParameters[tKey]['lr']
+                    for param in curParamValues:
+                        if tKey == 'gradientDescent':
+                            # this returns the entire history of errors vs. epochs
+                            trainingError = net.trainf(trainFeatures, trainTarget, epochs=100, show=0,
+                                                      goal=goalThreshold,lr=param)
+                        elif tKey == 'momentum':
+                            # this returns the entire history of errors vs. epochs
+                            trainingError = net.train.train_gdm(trainFeatures, trainTarget, epochs=100, show=0,
+                                                      goal=goalThreshold,lr=param)
+                        elif tKey == 'adaptiveLearningRate':
+                             # this returns the entire history of errors vs. epochs
+                            trainingError = net.train.train_gda(trainFeatures, trainTarget, epochs=100, show=0,
+                                                      goal=goalThreshold, lr=param)
+                        elif tKey == 'm+a':
+                            # this returns the entire history of errors vs. epochs
+                            trainingError = net.nl.train.train_gdx(trainFeatures, trainTarget, epochs=100, show=0,
+                                                      goal=goalThreshold, lr=param)
+
+                    # however, we are only interested in the final error
+                    trainingErrors[(i, j)] = trainingError[-1]
+                    testError = net.sim(testTarget)
+                    testErrors[(i, j, aKey, tKey, param)] = testError[-1]
+print trainingErrors
+print testErrors
