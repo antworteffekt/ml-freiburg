@@ -57,7 +57,7 @@ def loadSineData():
             'testTarget': testTarget}
 
 
-data = loadSineData()
+data = loadAbalone()
 trainFeatures, trainTarget, testFeatures, testTarget = data['trainFeatures'], data['trainTarget'], \
                                                        data['testFeatures'], data['testTarget']
 
@@ -86,7 +86,7 @@ numHiddenLayers = [1, 2]
 hiddenLayerSize = [1]
 activationFunctions = {'log': nl.net.trans.LogSig, 'linear': nl.net.trans.PureLin, 'tan': nl.net.trans.TanSig}
 trainingMethods = {'gradientDescent': nl.net.train.train_gd, 'momentum': nl.net.train.train_gdm,
-                  'adaptiveLearningRate': nl.net.train.train_gda, 'm+a': nl.net.train.train_gdx}
+                   'adaptiveLearningRate': nl.net.train.train_gda, 'm+a': nl.net.train.train_gdx}
 import inspect as ins
 
 # Extract the default values for all of the parameters used by each sort of training method
@@ -99,25 +99,25 @@ malr = ins.getargspec(nl.net.train.gd.TrainGDX.__init__)
 # Store the parameters for each sort of training method
 # Currently, the set is determined by the default, +/- order of mag., +/- mult. of 2
 trainingMethodParameters = {'gradientDescent': {'lr': [gd.defaults[0],
-                                                                 gd.defaults[0] * 10,
-                                                                 gd.defaults[0] / 10,
-                                                                 gd.defaults[0] * 2,
-                                                                 gd.defaults[0] / 2]},
+                                                       gd.defaults[0] * 10,
+                                                       gd.defaults[0] / 10,
+                                                       gd.defaults[0] * 2,
+                                                       gd.defaults[0] / 2]},
                             'momentum': {'lr': [m.defaults[0],
-                                                          m.defaults[0] * 10,
-                                                          m.defaults[0] / 10,
-                                                          m.defaults[0] * 2,
-                                                          m.defaults[0] / 2]},
+                                                m.defaults[0] * 10,
+                                                m.defaults[0] / 10,
+                                                m.defaults[0] * 2,
+                                                m.defaults[0] / 2]},
                             'adaptiveLearningRate': {'lr': [alr.defaults[0],
-                                                                      alr.defaults[0] * 10,
-                                                                      alr.defaults[0] / 10,
-                                                                      alr.defaults[0] * 2,
-                                                                      alr.defaults[0] / 2]},
+                                                            alr.defaults[0] * 10,
+                                                            alr.defaults[0] / 10,
+                                                            alr.defaults[0] * 2,
+                                                            alr.defaults[0] / 2]},
                             'm+a': {'lr': [malr.defaults[0],
-                                                     malr.defaults[0] * 10,
-                                                     malr.defaults[0] / 10,
-                                                     malr.defaults[0] * 2,
-                                                     malr.defaults[0] / 2]}}
+                                           malr.defaults[0] * 10,
+                                           malr.defaults[0] / 10,
+                                           malr.defaults[0] * 2,
+                                           malr.defaults[0] / 2]}}
 
 trainingErrors = {}
 testErrors = {}
@@ -131,30 +131,31 @@ for j in numHiddenLayers:
             layerNums = [j] * i
             # there is always an output layer, the number of nodes of which is determined by the number of cols in target
             layerNums.append(numTarget)
-            #print "Current Topology:", layerNums
+            # print "Current Topology:", layerNums
             for aKey in activationFunctions:
-                activationFunction = [activationFunctions[aKey]]*len(layerNums)
-                 # build net, using the current sort of activation function
-                net = nl.net.newff(netMinMax, layerNums, transf=activationFunction)
+                activationFunction = [activationFunctions[aKey]] * len(layerNums)
+                # build net, using the current sort of activation function
+                #net = nl.net.newff(netMinMax, layerNums, transf=activationFunction)
+                net = nl.net.newff(netMinMax, layerNums)
                 for tKey in trainingMethods:
                     net.trainf = trainingMethods[tKey]
                     curParamValues = trainingMethodParameters[tKey]['lr']
                     for param in curParamValues:
                         if tKey == 'gradientDescent':
                             # this returns the entire history of errors vs. epochs
-                            trainingError = net.trainf(trainFeatures, trainTarget, epochs=100, show=0,
-                                                      goal=goalThreshold,lr=param)
+                            trainingError = net.train(trainFeatures, trainTarget, epochs=100, show=50,
+                                                      goal=goalThreshold, lr=param)
                         elif tKey == 'momentum':
                             # this returns the entire history of errors vs. epochs
-                            trainingError = net.train.train_gdm(trainFeatures, trainTarget, epochs=100, show=0,
-                                                      goal=goalThreshold,lr=param)
+                            trainingError = net.train(trainFeatures, trainTarget, epochs=100, show=50,
+                                                      goal=goalThreshold, lr=param)
                         elif tKey == 'adaptiveLearningRate':
-                             # this returns the entire history of errors vs. epochs
-                            trainingError = net.train.train_gda(trainFeatures, trainTarget, epochs=100, show=0,
+                            # this returns the entire history of errors vs. epochs
+                            trainingError = net.train(trainFeatures, trainTarget, epochs=100, show=50,
                                                       goal=goalThreshold, lr=param)
                         elif tKey == 'm+a':
                             # this returns the entire history of errors vs. epochs
-                            trainingError = net.nl.train.train_gdx(trainFeatures, trainTarget, epochs=100, show=0,
+                            trainingError = net.train(trainFeatures, trainTarget, epochs=100, show=50,
                                                       goal=goalThreshold, lr=param)
 
                     # however, we are only interested in the final error
