@@ -1,5 +1,5 @@
 
-setwd("~/uni-freiburg/ss2014/machineLearning/programming/task1/")
+setwd("~/uni-freiburg/ss2014/machineLearning/ml-freiburg/task1/")
 abalone_data <- read.csv("data//abalone.data")
 # Sex  	nominal			M, F, and I (infant)
 # Length		continuous	mm	Longest shell measurement
@@ -26,7 +26,7 @@ abalone_data <- subset(abalone_data, select = -sex)
 # split the rings variable into three different binary variables as follows:
 # 1-8 first category, 9 and 10 second, +11 third
 abalone_data$age1 <- ifelse(abalone_data$rings <= 8, 1, 0)
-abalone_data$age2 <- ifelse(abalone_data$rings == 9 || abalone_data == 10, 1, 0)
+abalone_data$age2 <- ifelse(abalone_data$rings == 9 | abalone_data$rings == 10, 1, 0)
 abalone_data$age3 <- ifelse(abalone_data$rings >= 11, 1, 0)
 
 abalone_data <- subset(abalone_data, select = -rings)
