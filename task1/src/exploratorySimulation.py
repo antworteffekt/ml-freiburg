@@ -57,13 +57,15 @@ def loadSineData():
             'testTarget': testTarget}
 
 
-data = loadAbalone()
+data = loadSineData()
 trainFeatures, trainTarget, testFeatures, testTarget = data['trainFeatures'], data['trainTarget'], \
                                                        data['testFeatures'], data['testTarget']
 
 assert len(trainTarget.shape) == len(testTarget.shape)
 assert len(trainFeatures.shape) == len(testFeatures.shape)
 netMinMax = []
+numTrainingInstances = trainFeatures.shape[0]
+numTestInstances = testFeatures.shape[0]
 if len(trainFeatures.shape) > 1:
     numFeatures = trainFeatures.shape[1]
     assert trainTarget.shape[1] == testTarget.shape[1]
@@ -84,7 +86,7 @@ else:
 
 numHiddenLayers = [1, 2]
 hiddenLayerSize = [1]
-activationFunctions = {'log': nl.net.trans.LogSig, 'linear': nl.net.trans.PureLin, 'tan': nl.net.trans.TanSig}
+activationFunctions = {'log': nl.net.trans.LogSig(), 'linear': nl.net.trans.PureLin(), 'tan': nl.net.trans.TanSig()}
 trainingMethods = {'gradientDescent': nl.net.train.train_gd, 'momentum': nl.net.train.train_gdm,
                    'adaptiveLearningRate': nl.net.train.train_gda, 'm+a': nl.net.train.train_gdx}
 import inspect as ins
@@ -135,32 +137,35 @@ for j in numHiddenLayers:
             for aKey in activationFunctions:
                 activationFunction = [activationFunctions[aKey]] * len(layerNums)
                 # build net, using the current sort of activation function
-                #net = nl.net.newff(netMinMax, layerNums, transf=activationFunction)
-                net = nl.net.newff(netMinMax, layerNums)
+                net = nl.net.newff(netMinMax, layerNums, transf=activationFunction)
+                #net = nl.net.newff(netMinMax, layerNums)
                 for tKey in trainingMethods:
                     net.trainf = trainingMethods[tKey]
                     curParamValues = trainingMethodParameters[tKey]['lr']
                     for param in curParamValues:
                         if tKey == 'gradientDescent':
                             # this returns the entire history of errors vs. epochs
-                            trainingError = net.train(trainFeatures, trainTarget, epochs=100, show=50,
+                            trainingError = net.train(trainFeatures, trainTarget, epochs=100, show=0,
                                                       goal=goalThreshold, lr=param)
                         elif tKey == 'momentum':
                             # this returns the entire history of errors vs. epochs
-                            trainingError = net.train(trainFeatures, trainTarget, epochs=100, show=50,
+                            trainingError = net.train(trainFeatures, trainTarget, epochs=100, show=0,
                                                       goal=goalThreshold, lr=param)
                         elif tKey == 'adaptiveLearningRate':
                             # this returns the entire history of errors vs. epochs
-                            trainingError = net.train(trainFeatures, trainTarget, epochs=100, show=50,
+                            trainingError = net.train(trainFeatures, trainTarget, epochs=100, show=0,
                                                       goal=goalThreshold, lr=param)
                         elif tKey == 'm+a':
                             # this returns the entire history of errors vs. epochs
-                            trainingError = net.train(trainFeatures, trainTarget, epochs=100, show=50,
+                            trainingError = net.train(trainFeatures, trainTarget, epochs=100, show=0,
                                                       goal=goalThreshold, lr=param)
 
                     # however, we are only interested in the final error
-                    trainingErrors[(i, j)] = trainingError[-1]
-                    testError = net.sim(testTarget)
-                    testErrors[(i, j, aKey, tKey, param)] = testError[-1]
+                    # this value is the SSE, we need to normalize w.r.t. # of training instances
+                    trainingErrors[(i, j, aKey, tKey, param)] = trainingError[-1]/numTrainingInstances
+                    testSim = net.sim(testFeatures)
+                    # likewise for the test error
+                    testError = nl.net.error.SSE.__call__(net.errorf, testSim - testTarget)/numTestInstances
+                    testErrors[(i, j, aKey, tKey, param)] = testError
 print trainingErrors
 print testErrors

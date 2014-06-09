@@ -125,7 +125,7 @@ class TrainGDM(TrainGD):
 
     def __init__(self, net, input, target, lr=0.01, adapt=False, mc=0.9):
         super(TrainGDM, self).__init__(net, input, target, lr, adapt)
-        self.mc = 0.9
+        self.mc = mc
         self.dw = [0] * len(net.layers)
         self.db = [0] * len(net.layers)
     
@@ -172,9 +172,9 @@ class TrainGDA(TrainGD):
     def __init__(self, net, input, target, lr=0.01, adapt=False, lr_inc=1.05, 
                                                 lr_dec=0.7, max_perf_inc=1.04):
         super(TrainGDA, self).__init__(net, input, target, lr, adapt)
-        self.lr_inc = 1.05
-        self.lr_dec = 0.7
-        self.max_perf_inc = 1.04
+        self.lr_inc = lr_inc
+        self.lr_dec = lr_dec
+        self.max_perf_inc = max_perf_inc
         self.err = []
 
     def learn(self, net, grad):
