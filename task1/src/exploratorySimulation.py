@@ -11,8 +11,10 @@ Created on Sat Jun 07 12:48:25 2014
 import os
 import numpy as np
 import neurolab as nl
-from sklearn import preprocessing
-
+import sys
+from fractions import Fraction
+from math import floor
+import inspect as ins
 
 def loadAbalone():
     "This function loads the Abalone data into training and test matrices."
@@ -84,12 +86,11 @@ if len(trainTarget.shape) > 1:
 else:
     numTarget = 1
 
-numHiddenLayers = [1, 2]
-hiddenLayerSize = [1]
+numHiddenLayers = [0, 1, 2]
+hiddenLayerSize = [1,2,3]
 activationFunctions = {'log': nl.net.trans.LogSig(), 'linear': nl.net.trans.PureLin(), 'tan': nl.net.trans.TanSig()}
 trainingMethods = {'gradientDescent': nl.net.train.train_gd, 'momentum': nl.net.train.train_gdm,
                    'adaptiveLearningRate': nl.net.train.train_gda, 'm+a': nl.net.train.train_gdx}
-import inspect as ins
 
 # Extract the default values for all of the parameters used by each sort of training method
 gd = ins.getargspec(nl.net.train.gd.TrainGD.__init__)
@@ -97,7 +98,7 @@ m = ins.getargspec(nl.net.train.gd.TrainGDM.__init__)
 alr = ins.getargspec(nl.net.train.gd.TrainGDA.__init__)
 malr = ins.getargspec(nl.net.train.gd.TrainGDX.__init__)
 
-# TODO: Consider other parameters for training algorithms, though this would require extending original package code
+# TODO: Consider other parameters for training algorithms
 # Store the parameters for each sort of training method
 # Currently, the set is determined by the default, +/- order of mag., +/- mult. of 2
 trainingMethodParameters = {'gradientDescent': {'lr': [gd.defaults[0],
@@ -124,13 +125,18 @@ trainingMethodParameters = {'gradientDescent': {'lr': [gd.defaults[0],
 trainingErrors = {}
 testErrors = {}
 goalThreshold = .02
+
+productOfConditions = len(numHiddenLayers) * len(hiddenLayerSize) * len(activationFunctions) * len(trainingMethods) * 5
+conditionsExplored = 0
+
 for j in numHiddenLayers:
     for i in hiddenLayerSize:
         # All topologies with no hidden layer are equivalent, so we only need to consider one csae
         if j == 0 and i == hiddenLayerSize[0] or j > 0:
-            # the number of nodes in each layer is constant (j) and the number of layers is determined
-            # by i
-            layerNums = [j] * i
+            layerNums = []
+            if j != 0:
+                # the number of nodes in each layer is constant (j) and the number of layers is determined by i
+                layerNums = [j] * i
             # there is always an output layer, the number of nodes of which is determined by the number of cols in target
             layerNums.append(numTarget)
             # print "Current Topology:", layerNums
@@ -140,32 +146,42 @@ for j in numHiddenLayers:
                 net = nl.net.newff(netMinMax, layerNums, transf=activationFunction)
                 #net = nl.net.newff(netMinMax, layerNums)
                 for tKey in trainingMethods:
+                    # Set the training method
                     net.trainf = trainingMethods[tKey]
+                    # Iterate over the set of parameter-values for this training method
                     curParamValues = trainingMethodParameters[tKey]['lr']
+                    # TODO: introduce other parameters
                     for param in curParamValues:
                         if tKey == 'gradientDescent':
                             # this returns the entire history of errors vs. epochs
-                            trainingError = net.train(trainFeatures, trainTarget, epochs=100, show=0,
+                            trainingError = net.train(trainFeatures, trainTarget, epochs=10, show=0,
                                                       goal=goalThreshold, lr=param)
                         elif tKey == 'momentum':
                             # this returns the entire history of errors vs. epochs
-                            trainingError = net.train(trainFeatures, trainTarget, epochs=100, show=0,
+                            trainingError = net.train(trainFeatures, trainTarget, epochs=10, show=0,
                                                       goal=goalThreshold, lr=param)
                         elif tKey == 'adaptiveLearningRate':
                             # this returns the entire history of errors vs. epochs
-                            trainingError = net.train(trainFeatures, trainTarget, epochs=100, show=0,
+                            trainingError = net.train(trainFeatures, trainTarget, epochs=10, show=0,
                                                       goal=goalThreshold, lr=param)
                         elif tKey == 'm+a':
                             # this returns the entire history of errors vs. epochs
-                            trainingError = net.train(trainFeatures, trainTarget, epochs=100, show=0,
+                            trainingError = net.train(trainFeatures, trainTarget, epochs=10, show=0,
                                                       goal=goalThreshold, lr=param)
-
-                    # however, we are only interested in the final error
-                    # this value is the SSE, we need to normalize w.r.t. # of training instances
-                    trainingErrors[(i, j, aKey, tKey, param)] = trainingError[-1]/numTrainingInstances
-                    testSim = net.sim(testFeatures)
-                    # likewise for the test error
-                    testError = nl.net.error.SSE.__call__(net.errorf, testSim - testTarget)/numTestInstances
-                    testErrors[(i, j, aKey, tKey, param)] = testError
+                        # however, we are only interested in the final error
+                        # this value is the SSE, we need to normalize w.r.t. # of training instances
+                        trainingErrors[(j, i, aKey, tKey, param)] = trainingError[-1]/numTrainingInstances
+                        # run the trained network on the test set
+                        testSim = net.sim(testFeatures)
+                        # likewise for the test error
+                        testError = nl.net.error.SSE.__call__(net.errorf, testSim - testTarget)/numTestInstances
+                        testErrors[(j, i, aKey, tKey, param)] = testError
+                        conditionsExplored = conditionsExplored + 1
+                        progressPercentage = int(floor(Fraction(conditionsExplored, productOfConditions).__float__()*100))
+                        sys.stdout.write('\r')
+                        # print progress bar
+                        sys.stdout.write("[%-20s] %d%%" % ('='*int(progressPercentage/5),progressPercentage))
+                        sys.stdout.flush()
+print '\n'
 print trainingErrors
 print testErrors
