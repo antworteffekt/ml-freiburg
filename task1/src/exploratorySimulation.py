@@ -16,6 +16,8 @@ from fractions import Fraction
 from math import floor
 import inspect as ins
 import time
+import csv
+import time
 start = int(round(time.time() * 1000))
 def loadAbalone():
     "This function loads the Abalone data into training and test matrices."
@@ -43,7 +45,6 @@ def loadAbalone():
     return {'trainFeatures': trainFeatures, 'trainTarget': trainTarget, 'testFeatures': testFeatures,
             'testTarget': testTarget}
 
-
 def loadSineData():
     "This function generates matrices sufficient to test a neural network, using a sine function."
     trainFeaturesRaw = np.linspace(-7, 7, 20)
@@ -58,7 +59,6 @@ def loadSineData():
     testTarget = testTargetRaw.reshape(len(testFeaturesRaw), 1)
     return {'trainFeatures': trainFeatures, 'trainTarget': trainTarget, 'testFeatures': testFeatures,
             'testTarget': testTarget}
-
 
 data = loadAbalone()
 trainFeatures, trainTarget, testFeatures, testTarget = data['trainFeatures'], data['trainTarget'], \
@@ -87,8 +87,8 @@ if len(trainTarget.shape) > 1:
 else:
     numTarget = 1
 
-numHiddenLayers = [0,1,2] #[0, 1, 2]
-hiddenLayerSize = [10, 20, 30] #[1,2,3]
+numHiddenLayers = [0,1,2]
+hiddenLayerSize = [10, 20, 30]
 regularizers = [0,.1,1,10]
 activationFunctions = {'log': nl.net.trans.LogSig(), 'linear': nl.net.trans.PureLin(), 'tan': nl.net.trans.TanSig()}
 trainingMethods = {'gradientDescent': nl.net.train.train_gd, 'momentum': nl.net.train.train_gdm,
@@ -187,7 +187,12 @@ for j in numHiddenLayers:
                             sys.stdout.write("[%-20s] %d%%" % ('='*int(progressPercentage/5),progressPercentage))
                             sys.stdout.flush()
 end = int(round(time.time() * 1000))
-print '\n'
-print trainingErrors
-print testErrors
-print (start - end)
+with open("../log/training_errors_" + time.strftime("%d-%m-%y_%H.%M") + ".log", 'w+') as outfile:
+    writer = csv.writer(outfile)
+    for key, value in trainingErrors.items():
+        writer.writerow([key,value])
+
+with open("../log/test_errors_" + time.strftime("%d-%m-%y_%H.%M") + ".log", 'w+') as outfile:
+    writer = csv.writer(outfile)
+    for key, value in testErrors.items():
+        writer.writerow([key,value])
