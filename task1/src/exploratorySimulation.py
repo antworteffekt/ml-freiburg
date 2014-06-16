@@ -131,7 +131,7 @@ conditionsExplored = 0
 
 for j in numHiddenLayers:
     for i in hiddenLayerSize:
-        # All topologies with no hidden layer are equivalent, so we only need to consider one csae
+        # All topologies with no hidden layer are equivalent, so we only need to consider one case
         if j == 0 and i == hiddenLayerSize[0] or j > 0:
             layerNums = []
             if j != 0:
