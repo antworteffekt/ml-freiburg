@@ -54,6 +54,8 @@ docs/_build/
 
 # Misc
 *.Rhistory
+*/log/
+.idea/
 
 *.name
 task1/src/.idea/scopes/scope_settings.xml
@@ -63,3 +65,5 @@ task1/src/.idea/src.iml
 task1/src/.idea/encodings.xml
 task1/src/.idea/vcs.xml
 task1/src/.idea/workspace.xml
+*.Rproj.user
+*.Rproj

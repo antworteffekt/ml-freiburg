@@ -15,6 +15,8 @@ import sys
 from fractions import Fraction
 from math import floor
 import inspect as ins
+import csv
+import time
 
 def loadAbalone():
     "This function loads the Abalone data into training and test matrices."
@@ -86,8 +88,8 @@ if len(trainTarget.shape) > 1:
 else:
     numTarget = 1
 
-numHiddenLayers = [0, 1, 2]
-hiddenLayerSize = [1,2,3]
+numHiddenLayers = [0]
+hiddenLayerSize = [1]
 activationFunctions = {'log': nl.net.trans.LogSig(), 'linear': nl.net.trans.PureLin(), 'tan': nl.net.trans.TanSig()}
 trainingMethods = {'gradientDescent': nl.net.train.train_gd, 'momentum': nl.net.train.train_gdm,
                    'adaptiveLearningRate': nl.net.train.train_gda, 'm+a': nl.net.train.train_gdx}
@@ -182,6 +184,18 @@ for j in numHiddenLayers:
                         # print progress bar
                         sys.stdout.write("[%-20s] %d%%" % ('='*int(progressPercentage/5),progressPercentage))
                         sys.stdout.flush()
-print '\n'
-print trainingErrors
-print testErrors
+# print '\n'
+# print trainingErrors
+# print testErrors
+
+
+with open("../log/training_errors_" + time.strftime("%d-%m-%y_%H.%M") + ".log", 'w+') as outfile:
+    writer = csv.writer(outfile)
+    for key, value in trainingErrors.items():
+        writer.writerow([key,value])
+
+with open("../log/test_errors_" + time.strftime("%d-%m-%y_%H.%M") + ".log", 'w+') as outfile:
+    writer = csv.writer(outfile)
+    for key, value in testErrors.items():
+        writer.writerow([key,value])
+
