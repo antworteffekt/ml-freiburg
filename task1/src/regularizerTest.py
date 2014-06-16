@@ -23,8 +23,8 @@ net1 = nl.net.newff([[-100,100]], [5, 1])
 net1.trainf = nl.net.train.train_gd
 net2 = net1.copy()
 net3 = net1.copy()
-#net2.regularizer = .5
-#net3.regularizer = .5
+net2.regularizer = .5
+net3.regularizer = 5
 
 # all networks receive the same training
 error1 = net1.train(inp, tar, epochs = 500, show = 0, goal = .02)

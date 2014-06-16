@@ -71,6 +71,7 @@ def newff(minmax, size, transf=None):
     net_ci = len(minmax)
     net_co = size[-1]
 
+
     if transf is None:
         transf = [trans.TanSig()] * len(size)
     assert len(transf) == len(size)

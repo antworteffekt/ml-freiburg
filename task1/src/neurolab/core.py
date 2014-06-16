@@ -61,6 +61,7 @@ class Net(object):
         self.errorf = errorf
         self.inp = np.zeros(self.ci)
         self.out = np.zeros(self.co)
+        self.regularizer = 0
         # Check connect format 
         assert self.inp_minmax.ndim == 2
         assert self.inp_minmax.shape[1] == 2
