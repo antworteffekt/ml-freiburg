@@ -17,8 +17,7 @@ from math import floor
 import inspect as ins
 import time
 import csv
-import time
-start = int(round(time.time() * 1000))
+
 def loadAbalone():
     "This function loads the Abalone data into training and test matrices."
     # set the working directory to the data folder
@@ -89,7 +88,7 @@ else:
 
 numHiddenLayers = [0,1,2]
 hiddenLayerSize = [10, 20, 30]
-regularizers = [0,.1,1,10]
+regularizers = [1,10]
 activationFunctions = {'log': nl.net.trans.LogSig(), 'linear': nl.net.trans.PureLin(), 'tan': nl.net.trans.TanSig()}
 trainingMethods = {'gradientDescent': nl.net.train.train_gd, 'momentum': nl.net.train.train_gdm,
                    'adaptiveLearningRate': nl.net.train.train_gda, 'm+a': nl.net.train.train_gdx}
@@ -100,7 +99,6 @@ m = ins.getargspec(nl.net.train.gd.TrainGDM.__init__)
 alr = ins.getargspec(nl.net.train.gd.TrainGDA.__init__)
 malr = ins.getargspec(nl.net.train.gd.TrainGDX.__init__)
 
-# TODO: Consider other parameters for training algorithms
 # Store the parameters for each sort of training method
 # Currently, the set is determined by the default, +/- order of mag., +/- mult. of 2
 trainingMethodParameters = {'gradientDescent': {'lr': [gd.defaults[0],
@@ -128,7 +126,7 @@ trainingErrors = {}
 testErrors = {}
 goalThreshold = .02
 
-productOfConditions = len(numHiddenLayers) * len(hiddenLayerSize) * len(regularizers) * len(activationFunctions) \
+numberOfConditions = len(numHiddenLayers) * len(hiddenLayerSize) * len(regularizers) * len(activationFunctions) \
                       * len(trainingMethods) * len(trainingMethodParameters['gradientDescent']['lr'])
 conditionsExplored = 0
 
@@ -154,23 +152,22 @@ for j in numHiddenLayers:
                         net.regularizer = r
                         # Iterate over the set of parameter-values for this training method
                         curParamValues = trainingMethodParameters[tKey]['lr']
-                        # TODO: introduce other parameters
                         for param in curParamValues:
                             if tKey == 'gradientDescent':
                                 # this returns the entire history of errors vs. epochs
-                                trainingError = net.train(trainFeatures, trainTarget, epochs=20, show=0,
+                                trainingError = net.train(trainFeatures, trainTarget, epochs=100, show=0,
                                                           goal=goalThreshold, lr=param)
                             elif tKey == 'momentum':
                                 # this returns the entire history of errors vs. epochs
-                                trainingError = net.train(trainFeatures, trainTarget, epochs=20, show=0,
+                                trainingError = net.train(trainFeatures, trainTarget, epochs=100, show=0,
                                                           goal=goalThreshold, lr=param)
                             elif tKey == 'adaptiveLearningRate':
                                 # this returns the entire history of errors vs. epochs
-                                trainingError = net.train(trainFeatures, trainTarget, epochs=20, show=0,
+                                trainingError = net.train(trainFeatures, trainTarget, epochs=100, show=0,
                                                           goal=goalThreshold, lr=param)
                             elif tKey == 'm+a':
                                 # this returns the entire history of errors vs. epochs
-                                trainingError = net.train(trainFeatures, trainTarget, epochs=20, show=0,
+                                trainingError = net.train(trainFeatures, trainTarget, epochs=100, show=0,
                                                           goal=goalThreshold, lr=param)
                             # however, we are only interested in the final error
                             # this value is the SSE, we need to normalize w.r.t. # of training instances
@@ -181,12 +178,11 @@ for j in numHiddenLayers:
                             testError = nl.net.error.SSE.__call__(net.errorf, testSim - testTarget)/numTestInstances
                             testErrors[(j, i, r, aKey, tKey, param)] = testError
                             conditionsExplored = conditionsExplored + 1
-                            progressPercentage = int(floor(Fraction(conditionsExplored, productOfConditions).__float__()*100))
+                            progressPercentage = int(floor(Fraction(conditionsExplored, numberOfConditions).__float__()*100))
                             sys.stdout.write('\r')
                             # print progress bar
                             sys.stdout.write("[%-20s] %d%%" % ('='*int(progressPercentage/5),progressPercentage))
                             sys.stdout.flush()
-end = int(round(time.time() * 1000))
 with open("../log/training_errors_" + time.strftime("%d-%m-%y_%H.%M") + ".log", 'w+') as outfile:
     writer = csv.writer(outfile)
     for key, value in trainingErrors.items():
