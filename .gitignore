@@ -67,3 +67,4 @@ task1/src/.idea/vcs.xml
 task1/src/.idea/workspace.xml
 *.Rproj.user
 *.Rproj
+*.zip
