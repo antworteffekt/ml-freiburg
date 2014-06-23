@@ -73,7 +73,7 @@
  % The short title appears at the bottom of every slide, the full title is only on the title page
 
 
-\author{names} % Your name
+\author{José Luis Licón, Max Lotstein} % Your name
 \institute[Uni Freiburg] % Your institution as it will appear on the bottom of every slide, may be shorthand to save space
 {
 Albert-Ludwigs-Universität Freiburg \\ % Your institution for the title page
@@ -106,14 +106,251 @@ Albert-Ludwigs-Universität Freiburg \\ % Your institution for the title page
 % blocks, all sections and subsections are automatically printed in the table of 
 % contents as an overview of the talk
 %------------------------------------------------
-
-
+\begin{frame}\frametitle{Model design}
+  The topology of the multi-layer perceptron was constrained as follows:
+  \begin{itemize}
+    \item Always 10 input nodes
+    \item Always 3 output nodes (discretisation of age variable)
+    \item 1 and 2 hidden layers were tested for significant differences in 
+    performance
+  \end{itemize}
+\end{frame}
 %------------------------------------------------
 
 
+%------------------------------------------------
+\begin{frame}\frametitle{Training parmeters}
+
+The following training parameters were modified:
+\begin{itemize}
+  \item Regularisation parameter (to enforce weight decay)
+  \item Optimisation method (gradient descent, GD with momentum, GD with
+  acceleration, Bayesian regularisation, etc.)
+  \item Network topology
+\end{itemize}
+
+\end{frame}
+%------------------------------------------------
+
+%------------------------------------------------
+\begin{frame}\frametitle{Tools}
+  
+\begin{columns}[c]
+\column{.5\textwidth}
+An initial attempt was made to use Neurolab. In the interest of simplicity we
+switched to MATLAB's neural network toolbox.
+
+\column{.5\textwidth}
+\begin{figure}[htbp]
+  \centering
+    \includegraphics[height=2.5in]{graphics/MatLab-NN-Interface.PNG}
+  % \caption{caption}
+  % \label{fig:graphics_MatLab-NN-Interface}
+\end{figure}
+
+\end{columns}
+
+\end{frame}
+%------------------------------------------------
+
+%------------------------------------------------
+\begin{frame} \frametitle{Exploratory data analysis}
+\begin{figure}[htbp]
+  \centering
+    \includegraphics[scale=.22]{graphics/rings.png}
+\end{figure}
+
+
+\end{frame}
+%------------------------------------------------
+
+
+\section{Neural network results}
+%------------------------------------------------
+\begin{frame} \frametitle{Parameter effect}
+  Effect on training error:
+  \vfill
+  {\scriptsize
+  \begin{tabular}{lrrrrr}
+  \toprule
+  \multicolumn{1}{l}{}&\multicolumn{1}{c}{Df}&\multicolumn{1}{c}{Sum Sq}&\multicolumn{1}{c}{Mean Sq}&\multicolumn{1}{c}{F value}&\multicolumn{1}{c}{Pr(\textgreater F)}\tabularnewline
+  \midrule
+  NumHiddenLayers                           &$  1$&$ 0.00$&$0.00$&$0.01$&$0.9338$\tabularnewline
+  HiddenLayerSize                           &$  2$&$ 0.01$&$0.01$&$0.10$&$0.9056$\tabularnewline
+  TrainingFn                                &$  6$&$ 3.30$&$0.55$&$8.33$&$0.0000$\tabularnewline
+  NumHiddenLayers:HiddenLayerSize           &$  2$&$ 0.01$&$0.00$&$0.06$&$0.9424$\tabularnewline
+  NumHiddenLayers:TrainingFn                &$  6$&$ 0.00$&$0.00$&$0.00$&$1.0000$\tabularnewline
+  HiddenLayerSize:TrainingFn                &$ 12$&$ 0.01$&$0.00$&$0.01$&$1.0000$\tabularnewline
+  NumHiddenLayers:HiddenLayerSize:TrainingFn&$ 12$&$ 0.01$&$0.00$&$0.02$&$1.0000$\tabularnewline
+  Residuals                                 &$168$&$11.08$&$0.07$&$$&$$\tabularnewline
+  \bottomrule
+  \end{tabular}
+}
+\end{frame}
+%------------------------------------------------
+
+%------------------------------------------------
+\begin{frame} \frametitle{Parameter effect}
+\begin{figure}[htbp]
+  \centering
+    \includegraphics[scale=.22]{graphics/training_error.png}
+\end{figure}
+
+\end{frame}
+%------------------------------------------------
+
+%------------------------------------------------
+\begin{frame} \frametitle{Parameter effect}
+  Effect on test error:
+  \vfill
+  {\scriptsize
+  \begin{tabular}{lrrrrr}
+  \toprule
+  \multicolumn{1}{l}{}&\multicolumn{1}{c}{Df}&\multicolumn{1}{c}{Sum Sq}&\multicolumn{1}{c}{Mean Sq}&\multicolumn{1}{c}{F value}&\multicolumn{1}{c}{Pr(\textgreater F)}\tabularnewline
+  \midrule
+  NumHiddenLayers                           &$  1$&$0.04$&$0.04$&$ 4.02$&$0.0464$\tabularnewline
+  HiddenLayerSize                           &$  2$&$0.02$&$0.01$&$ 0.70$&$0.4967$\tabularnewline
+  TrainingFn                                &$  6$&$0.98$&$0.16$&$14.95$&$0.0000$\tabularnewline
+  NumHiddenLayers:HiddenLayerSize           &$  2$&$0.01$&$0.00$&$ 0.27$&$0.7669$\tabularnewline
+  NumHiddenLayers:TrainingFn                &$  6$&$0.03$&$0.01$&$ 0.48$&$0.8243$\tabularnewline
+  HiddenLayerSize:TrainingFn                &$ 12$&$0.02$&$0.00$&$ 0.18$&$0.9990$\tabularnewline
+  NumHiddenLayers:HiddenLayerSize:TrainingFn&$ 12$&$0.04$&$0.00$&$ 0.29$&$0.9903$\tabularnewline
+  Residuals                                 &$168$&$1.83$&$0.01$&$$&$$\tabularnewline
+  \bottomrule
+  \end{tabular}
+  }
+  
+\end{frame}
+%------------------------------------------------
+
+%------------------------------------------------
+\begin{frame} \frametitle{Parameter effect}
+\begin{figure}[htbp]
+  \centering
+    \includegraphics[scale=.22]{graphics/test_error.png}
+\end{figure}
+
+\end{frame}
+%------------------------------------------------
+
+%------------------------------------------------
+\begin{frame} \frametitle{Confusion matrices}
+
+  \begin{columns}[c]
+  \column{.3\textwidth}
+  \begin{figure}[htbp]
+    \centering
+      \includegraphics[scale=.1]{graphics/conf0_0.pdf}
+    \caption{$\lambda = 0$}
+    \label{fig:graphics_conf0.0}
+  \end{figure}
+  
+  \begin{figure}[htbp]
+    \centering
+      \includegraphics[scale=.1]{graphics/conf0_1.pdf}
+    \caption{$\lambda = 0.1$}
+    \label{fig:graphics_conf0.1}
+  \end{figure}  
+  
+  \column{.3\textwidth}
+  
+  \begin{figure}[htbp]
+    \centering
+      \includegraphics[scale=.1]{graphics/conf0_2.pdf}
+    \caption{$\lambda = 0.2$}
+    \label{fig:graphics_conf0_2}
+  \end{figure}
+  
+  \begin{figure}[htbp]
+    \centering
+      \includegraphics[scale=.1]{graphics/conf0_5.pdf}
+    \caption{$\lambda = 0.5$}
+    \label{fig:graphics_conf0_5}
+  \end{figure}
+  
+  \column{.3\textwidth}
+  
+  \begin{figure}[htbp]
+    \centering
+      \includegraphics[scale=.1]{graphics/conf1_0.pdf}
+    \caption{$\lambda = 1$}
+    \label{fig:graphics_conf1_0}
+  \end{figure}
+  
+
+  \end{columns}
+
+
+\end{frame}
+%------------------------------------------------
+
+
+%------------------------------------------------
+\begin{frame} \frametitle{Confusion matrices}
+
+  \begin{columns}[c]
+  \column{.3\textwidth}
+  \begin{figure}[htbp]
+    \centering
+      \includegraphics[scale=.1]{graphics/conftrainbr.pdf}
+    \caption{$\lambda = 0$}
+    \label{fig:graphics_conf0.0}
+  \end{figure}
+  
+  \begin{figure}[htbp]
+    \centering
+      \includegraphics[scale=.1]{graphics/conftraingd.pdf}
+    \caption{$\lambda = 0.1$}
+    \label{fig:graphics_conf0.1}
+  \end{figure}  
+  
+  \column{.3\textwidth}
+  
+  \begin{figure}[htbp]
+    \centering
+      \includegraphics[scale=.1]{graphics/conftraingda.pdf}
+    \caption{$\lambda = 0.2$}
+    \label{fig:graphics_conf0_2}
+  \end{figure}
+  
+  \begin{figure}[htbp]
+    \centering
+      \includegraphics[scale=.1]{graphics/conftraingdm.pdf}
+    \caption{$\lambda = 0.5$}
+    \label{fig:graphics_conf0_5}
+  \end{figure}
+  
+  \column{.3\textwidth}
+  
+  \begin{figure}[htbp]
+    \centering
+      \includegraphics[scale=.1]{graphics/conftraingdx.pdf}
+    \caption{$\lambda = 1$}
+    \label{fig:graphics_conf1_0}
+  \end{figure}
+  
+  \begin{figure}[htbp]
+    \centering
+      \includegraphics[scale=.1]{graphics/conftrainrp.pdf}
+    \caption{$\lambda = 1$}
+    \label{fig:graphics_conf1_0}
+  \end{figure}
+
+  \end{columns}
+
+
+\end{frame}
+%------------------------------------------------
+
+%------------------------------------------------
+\begin{frame} \frametitle{Bayesian regularisation}
+
+\end{frame}
+%------------------------------------------------
+
 
 \begin{frame}
-\Huge{\centerline{The End}}
+\Huge{\centerline{The End/Questions}}
 \end{frame}
 
 %----------------------------------------------------------------------------------------

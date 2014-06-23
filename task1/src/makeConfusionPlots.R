@@ -12,7 +12,9 @@ for (tf in c("trainbfg","trainbr","traingd","traingda","traingdm","traingdx","tr
   df <- data.frame(conf[1:3], conf[4:6], conf[7:9])
   rownames(df) = c("Out1", "Out2", "Out3")
   colnames(df) = c("Tar1", "Tar2", "Tar3")
-  heatmap(as.matrix(df), Rowv=NA, main = tf, Colv=NA, col = my_palette, scale="column", margins=c(5,10))
+  pdf(file=paste("conf", tf, ".pdf",sep=""),width=8.97,height=5.76)
+  heatmap(as.matrix(df), Rowv=NA, main = tf, Colv=NA, col = my_palette, scale="none", margins=c(5,10))
+  dev.off()
 }
 
 regularizers <- c(0.0, 0.1, 0.2, 0.5, 1.0)
@@ -24,5 +26,7 @@ for (r in regularizers) {
   df <- data.frame(conf[1:3], conf[4:6], conf[7:9])
   rownames(df) = c("Out1", "Out2", "Out3")
   colnames(df) = c("Tar1", "Tar2", "Tar3")
-  heatmap(as.matrix(df), Rowv=NA, main = r, Colv=NA, col = my_palette, scale="column", margins=c(5,10))
+  pdf(file=paste("conf", gsub("/.", "_", r), ".pdf",sep=""),width=8.97,height=5.76)
+  heatmap(as.matrix(df), Rowv=NA, main = r, Colv=NA, col = my_palette, scale="none", margins=c(5,10))
+  dev.off()
 }

@@ -68,3 +68,5 @@ task1/src/.idea/workspace.xml
 *.Rproj.user
 *.Rproj
 *.zip
+*.PNG
+*.jpg
